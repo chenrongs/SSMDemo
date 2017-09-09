@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+                        http://www.springframework.org/schema/mvc
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+                        http://www.springframework.org/schema/aop
+                        http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+                        http://www.springframework.org/schema/tx
+                        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd"
+>
+    <!--spring包扫描-->
+    <context:component-scan base-package="org.lanqiao" />
+    <!--开启spring mvc注解支持 （数据绑定。。。很多） 放一块 不然容易报错-->
+    <mvc:annotation-driven/>
+    <!-- 定义跳转的文件的前后缀 ，视图模式配置-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 视图解析器 自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 WEB-INF/jsp/-->
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    <!--配置springmvc 拦截器-->
+    <!--对所有进行拦截-->
+    <mvc:interceptors>
+        <bean class="org.lanqiao.encodeInterceptor.EncodingInterceptor"/>
+        <!--对登陆 的进行拦截
+        <mvc:interceptor>
+            <mvc:mapping path="/user/*"/>
+            <bean class="org.lanqiao.encodeInterceptor.EncodingInterceptor"/>
+        </mvc:interceptor>-->
+
+    </mvc:interceptors>
+
+    <bean id="logAOP" class="org.lanqiao.aop.LogAOP" />
+    <aop:config>
+        <!--配置切面-->
+        <aop:aspect id="aspcet" ref="logAOP">
+            <!--配置 * org.lanqiao.service.*(..)) 中所有类的所有方法-->
+            <aop:pointcut id="addAllMethod" expression="execution(* org.lanqiao.service.*.*(..))" />
+            <aop:before method="somethingBefore" pointcut-ref="addAllMethod" />
+            <aop:after method="somethingAfter" pointcut-ref="addAllMethod" />
+            <aop:around method="somethingAround" pointcut-ref="addAllMethod" />
+        </aop:aspect>
+    </aop:config>
+
+    <!--配置事务管理器-->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--需要回滚的方法-->
+    <tx:advice id="serviceAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+
+            <!--当代理的service层中的方法抛出异常的时候才回滚,必须加rollback-for参数-->
+            <tx:method name="add*" propagation="REQUIRED"   rollback-for="java.lang.Exception"/>
+            <tx:method name="insert*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="del*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="remove*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="modify*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <!--除了上面标识的方法,其他方法全是只读方法-->
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置哪些类的方法需要进行事务管理 -->
+    <aop:config>
+        <aop:pointcut id="servicePointcut"
+                      expression="execution(* org.lanqiao.service.*.*(..))"/>
+        <aop:advisor pointcut-ref="servicePointcut" advice-ref="serviceAdvice"/>
+    </aop:config>
+
+    <!--mvc跨域-->
+    <mvc:cors>
+        <mvc:mapping path="/**"
+                     allowed-origins="*"
+                     allowed-methods="GET,PUT,POST,DELETE"
+                     allowed-headers="X-Requested-with,Origin,Content-Type,Accept,Authorization"
+        />
+    </mvc:cors>
+
+    <!--对静态资源不拦截，交给web容器-->
+    <mvc:default-servlet-handler/>
+
+</beans>

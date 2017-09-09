@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.3.xsd ">
+
+    <!--spring包扫描-->
+    <context:component-scan base-package="org.lanqiao" />
+
+    <!--数据源-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/mrbbs?useUnicode=yes&amp;characterEncoding=UTF-8"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+        <property name="maxActive" value="10"/>
+        <property name="maxIdle" value="2"/>
+        <property name="maxWait" value="12000"/>
+    </bean>
+
+    <!--mybatis和spring整合-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--引入sqlSessionFactory-->
+        <property name="dataSource" ref="dataSource" />
+        <!--mybatis全局配置-->
+        <property name="configuration">
+            <bean class="org.apache.ibatis.session.Configuration">
+                <!--驼峰命名转换-->
+                <property name="mapUnderscoreToCamelCase" value="true"/>
+                <!--是否开启缓存-->
+                <property name="cacheEnabled" value="false"/>
+                <!--是否开启懒加载-->
+                <property name="lazyLoadingEnabled" value="false"/>
+                <!--允许 JDBC 支持自动生成主键，需要驱动兼容-->
+                <property name="useGeneratedKeys" value="true"/>
+            </bean>
+        </property>
+        <!--扫描sql配置文件：mapper所需要的xml    classpath是代码编译后的class文件所在的路径-->
+        <property name="mapperLocations" value="classpath*:mapper/*.xml"/>
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="org.lanqiao.dao"/>
+    </bean>
+
+
+
+</beans>

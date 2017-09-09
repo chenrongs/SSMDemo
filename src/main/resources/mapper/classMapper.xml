@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lanqiao.dao.IClassesDao">
+    <!--开启二级缓存-->
+    <cache/>
+    <!--设置映射关系  放入对象 一对一-->
+    <select id="getInfo" resultMap="ClassResultMap">
+        SELECT * FROM teacher t,course c
+        WHERE t.t_id=c.t_id;
+    </select>
+    <resultMap id="ClassResultMap" type="org.lanqiao.bean.Course">
+        <id property="cId" column="c_id"/>
+        <result property="cName" column="c_name"/>
+        <association property="teacher" javaType="org.lanqiao.bean.Teacher">
+            <id property="tId" column="t_id"/>
+            <result property="tName" column="t_name"/>
+        </association>
+    </resultMap>
+    <!--设置一对多的映射关系-->
+   <!-- <select id="getAllByid" resultMap="result">
+
+    </select>
+    <resultMap id="result" type="org.lanqiao.bean">
+        <id property="" column=""/>
+        <result property="" column=""/>
+        <association property="" javaType="">
+            <id property="" column=""/>
+            <result property="" column=""/>
+        </association>
+        &lt;!&ndash;引入学生集合&ndash;&gt;
+        <collection property="" ofType="">
+            <id property="" column=""/>
+            <result property="" column=""/>
+        </collection>
+    </resultMap>-->
+</mapper>

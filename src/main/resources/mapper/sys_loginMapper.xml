@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.lanqiao.dao.ISys_loginDao">
+    <!--查询所有用户 resultType 返回值类型-->
+    <select id="getAll" resultType="org.lanqiao.bean.Login">
+         select * from sys_login
+    </select>
+    <!-- #{对象里的字段名}-->
+    <select id="getLoginById" resultType="org.lanqiao.bean.Login" parameterType="int">
+        select * from sys_login WHERE login_id=#{loginId}
+    </select>
+    <insert id="addLogin" parameterType="org.lanqiao.bean.Login">
+        INSERT INTO sys_login(username,password,email,wxname) VALUES(#{username},#{password},#{email},#{wxname});
+    </insert>
+    <!--  获取插入数据的id useGeneratedKeys useGeneratedKeys="true" keyProperty="++name"-->
+    <update id="updateById" parameterType="org.lanqiao.bean.Login">
+        UPDATE sys_login SET username=#{username},password=#{password},email=#{email},wxname=#{wxname} WHERE login_id=#{loginId};
+    </update>
+    <delete id="delById" parameterType="int">
+        DELETE FROM sys_login WHERE login_id=#{loginId}
+    </delete>
+    <!-- 条件查询 -->
+    <select id="getLoginByCondition" parameterType="org.lanqiao.bean.Login" resultType="org.lanqiao.bean.Login">
+        SELECT * FROM sys_login WHERE 1=1
+        <if test="username!=null &amp;&amp; !&quot;&quot;.equals(username)">
+            AND username LIKE #{username}
+        </if>
+         <if test="password != null &amp;&amp; !&quot;&quot;.equals(password)" >
+             AND password = #{password}
+         </if>
+         <if test="email != null &amp;&amp; !&quot;&quot;.equals(email)">
+             AND email LIKE #{email}
+         </if>
+    </select>
+
+
+    <select id="findLoginByCondition" parameterType="org.lanqiao.bean.Login" resultType="org.lanqiao.bean.Login">
+        SELECT * FROM sys_login WHERE 1=1
+        <choose>
+        <when test="username!=null &amp;&amp; !&quot;&quot;.equals(username)">
+            AND username LIKE #{username}
+        </when>
+        <when test="password != null &amp;&amp; !&quot;&quot;.equals(password)" >
+            AND password = #{password}
+        </when>
+        <when test="email != null &amp;&amp; !&quot;&quot;.equals(email)">
+            AND email LIKE #{email}
+        </when>
+        <otherwise>
+
+        </otherwise>
+      </choose>
+    </select>
+    <!--set Login-->
+    <update id="updateLogin" parameterType="org.lanqiao.bean.Login" >
+     UPDATE sys_login
+      <set>
+          <if test="username !=null &amp;&amp; !&quot;&quot;.equals(username)" >
+              username=#{username},
+          </if>
+          <if test="password !=null &amp;&amp; !&quot;&quot;.equals(password)" >
+              password=#{password},
+          </if>
+          <if test="email !=null &amp;&amp; !&quot;&quot;.equals(email)" >
+              email=#{email},
+          </if>
+          <if test="wxname !=null &amp;&amp; !&quot;&quot;.equals(wxname)" >
+              wxname=#{wxname},
+          </if>
+      </set>
+        WHERE login_id=#{loginId};
+    </update>
+    <!--批量处理 foreach-->
+    <select id="get" resultType="org.lanqiao.bean.Login">
+         select * from sys_login WHERE login_id IN 
+         <foreach item="item" index="index" collection="list"
+             open="(" separator="," close=")">
+             #{item}
+         </foreach>
+    </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
